@@ -1,0 +1,52 @@
+package com.example.HeroProject.viewmodel;
+
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
+
+import com.example.HeroProject.pojo.Hero;
+import com.example.HeroProject.retrofit.Api;
+
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+public class HeroViewModel extends ViewModel {
+    private MutableLiveData<List<Hero>>  heroList;
+
+
+    public LiveData<List<Hero>> getHeroes(Retrofit retrofit){
+        //if the list is null
+        if (heroList == null) {
+            heroList = new MutableLiveData<List<Hero>>();
+            //we will load it asynchronously from server in this method
+            loadHeroes(retrofit);
+        }
+
+        //finally we will return the list
+        return heroList;
+    }
+
+    private void loadHeroes(Retrofit retrofit){
+         Api api = retrofit.create(Api.class);
+        Call<List<Hero>> call = api.getHeroes();
+
+        call.enqueue(new Callback<List<Hero>>() {
+            @Override
+            public void onResponse(Call<List<Hero>> call, Response<List<Hero>> response) {
+                heroList.setValue(response.body());
+            }
+
+            @Override
+            public void onFailure(Call<List<Hero>> call, Throwable t) {
+                heroList.setValue(null);
+            }
+        });
+
+
+    }
+}
